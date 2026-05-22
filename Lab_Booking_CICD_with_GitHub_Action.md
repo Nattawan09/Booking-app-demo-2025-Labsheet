@@ -644,7 +644,36 @@ curl http://localhost:3001/api/reports \
 ```plaintext
 # วาง output จาก curl ที่นี่
 
+curl http://localhost:3001/api/rooms
+[{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-12T22:51:34.720Z"},{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-12T22:51:34.717Z"},{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-12T22:51:34.722Z"}]
 
+curl -X POST http://localhost:3001/api/bookings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "guestName": "Nattawan Changkeb",
+    "guestEmail": "68030085@kmitl.ac.th",
+    "phone": "0984700509",
+    "roomId": 1,
+    "guests": "1",
+    "checkIn": "2025-08-01",
+    "checkOut": "2025-08-03"
+  }'
+{"id":1,"fullname":"Nattawan Changkeb","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":1,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-22T07:56:23.022Z"}
+
+curl -X POST http://localhost:3001/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "admin123"}'
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTQzNjU5MSwiZXhwIjoxNzc5NDQwMTkxfQ.ajDDpwInpcl-ACYkFPHz8dEOnkOfBYPkXI23Tk_tZr8","user":{"id":1,"username":"admin","role":"admin"}}
+
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTQzNjU5MSwiZXhwIjoxNzc5NDQwMTkxfQ.ajDDpwInpcl-ACYkFPHz8dEOnkOfBYPkXI23Tk_tZr8"
+
+curl http://localhost:3001/api/bookings \
+  -H "Authorization: Bearer $TOKEN"
+[{"id":1,"fullname":"Nattawan Changkeb","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":1,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-22T07:56:23.022Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-12T22:51:34.717Z"}}]
+
+curl http://localhost:3001/api/reports \
+  -H "Authorization: Bearer $TOKEN"
+{"bookings":[{"id":1,"fullname":"Nattawan Changkeb","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2025-08-01T00:00:00.000Z","checkout":"2025-08-03T00:00:00.000Z","roomtype":"standard","guests":1,"status":"pending","comment":null,"roomId":1,"createdAt":"2026-05-22T07:56:23.022Z","room":{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-12T22:51:34.717Z"}}],"summaryByRoom":{"ห้องมาตรฐาน":1},"summaryByStatus":{"pending":1},"totalNights":2,"totalBookings":1}
 
 ```
 
@@ -960,11 +989,8 @@ start newman-report.html       # Windows (Git Bash)
 > 🪟 **Windows**: ถ้า `start newman-report.html` ไม่ทำงาน ให้เปิด File Explorer แล้วดับเบิลคลิกไฟล์ `newman-report.html` แทน
 
 **แนบรูปผลการทดสอบ Newman**:
+![alt text](image.png)
 
-```plaintext
-# แนบ screenshot ผลการทดสอบที่นี่
-
-```
 
 **คำถาม 4.3**: Newman tests ที่เขียนมีการทดสอบทั้ง positive cases (สำเร็จ) และ negative cases (ล้มเหลว) อธิบายให้ครบอย่างน้อย 2 ตัวอย่าง
 
@@ -1503,10 +1529,7 @@ git push origin main
 
 **แนบรูป GitHub Actions Workflow ที่ผ่านทั้งหมด**:
 
-```plaintext
-# แนบ screenshot ที่นี่
-
-```
+![alt text](image1.png)
 
 ---
 
@@ -1749,9 +1772,45 @@ curl -I $BACKEND/api/rooms
 **บันทึกผลการทดสอบบน Production**:
 
 ```plaintext
-# วาง output ที่นี่
+export BACKEND=https://booking-backend-c5l7.onrender.com
 
+curl $BACKEND/api/rooms
+[{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-22T12:41:13.415Z"},{"id":1,"roomType":"standard","name":"ห้องมาตรฐาน","description":"ห้องพักสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกพื้นฐาน","capacity":2,"price":1200,"createdAt":"2026-05-22T12:41:13.411Z"},{"id":3,"roomType":"suite","name":"ห้องสวีท","description":"ห้องพักขนาดใหญ่สำหรับครอบครัวหรือกลุ่ม","capacity":4,"price":2500,"createdAt":"2026-05-22T12:41:13.417Z"}]
+
+curl -s -X POST $BACKEND/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTQ1NTU3OCwiZXhwIjoxNzc5NDU5MTc4fQ.o5zhzUut5HgkcMHusIWjAxvLdZGikhCJNt0IWy0C1ds","user":{"id":1,"username":"admin","role":"admin"}}
+
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3OTQ1NTU3OCwiZXhwIjoxNzc5NDU5MTc4fQ.o5zhzUut5HgkcMHusIWjAxvLdZGikhCJNt0IWy0C1ds"
+
+curl $BACKEND/api/bookings   -H "Authorization: Bearer $TOKEN"
+[{"id":1,"fullname":"ณัฏฐวรรณ ช่างเก็บ","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2026-07-01T00:00:00.000Z","checkout":"2026-07-05T00:00:00.000Z","roomtype":"deluxe","guests":3,"status":"pending","comment":null,"roomId":2,"createdAt":"2026-05-22T13:14:48.979Z","room":{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-22T12:41:13.415Z"}}]
+
+curl $BACKEND/api/reports \
+  -H "Authorization: Bearer $TOKEN"
+{"bookings":[{"id":1,"fullname":"ณัฏฐวรรณ ช่างเก็บ","email":"68030085@kmitl.ac.th","phone":"0984700509","checkin":"2026-07-01T00:00:00.000Z","checkout":"2026-07-05T00:00:00.000Z","roomtype":"deluxe","guests":3,"status":"pending","comment":null,"roomId":2,"createdAt":"2026-05-22T13:14:48.979Z","room":{"id":2,"roomType":"deluxe","name":"ห้องดีลักซ์","description":"พื้นที่กว้างขึ้น เหมาะสำหรับ 2-3 ท่าน","capacity":3,"price":1800,"createdAt":"2026-05-22T12:41:13.415Z"}}],"summaryByRoom":{"ห้องดีลักซ์":1},"summaryByStatus":{"pending":1},"totalNights":4,"totalBookings":1}
+
+curl -I $BACKEND/api/rooms
+HTTP/1.1 200 OK
+Date: Fri, 22 May 2026 13:17:44 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+access-control-allow-origin: *
+etag: W/"32f-21KqDFhkwJI194XksA9bh+zg/5k"
+rndr-id: 4774e0d8-871d-4bfd
+Server: cloudflare
+vary: Accept-Encoding
+x-powered-by: Express
+x-render-origin-server: Render
+cf-cache-status: DYNAMIC
+CF-RAY: 9ffc1a4f3e07d338-BKK
+alt-svc: h3=":443"; ma=86400
 ```
+![alt text](image2.png)
+![alt text](image3.png)
+![alt text](image4.png)
+![alt text](image5.png)
 
 ### ขั้นตอนที่ 9.6: ทดสอบ Auto-Deployment (สำคัญ)
 
